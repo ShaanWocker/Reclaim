@@ -18,6 +18,13 @@ recommended approach for time-based quota errors) rather than
 dropped. On a ~14,000 message mailbox, expect this to take roughly
 45-50 minutes -- that's Google's limit, not a bug.
 
+Gmail also sometimes returns a 400 "Precondition check failed" when
+an account is right at its rate limit, instead of the 429/403 you'd
+expect -- a known, long-standing quirk in Gmail's API (not specific
+to this script). That specific error is retried too, by checking its
+reason rather than its status code, so it doesn't loosen retry
+behavior for genuinely invalid requests.
+
 Resumable: on each run, messages already in messages.csv are kept
 as-is (and dropped if they're no longer in your mailbox -- e.g. you
 deleted them elsewhere), and only genuinely new messages get fetched.
@@ -61,6 +68,14 @@ CSV_FIELDS = [
 # but just as safe to retry after a short wait.
 RETRYABLE_STATUSES = {403, 429, 500, 502, 503, 504}
 
+# Gmail sometimes returns a 400 "Precondition check failed" /
+# failedPrecondition instead of the expected 429/403 when an account
+# is right at its rate limit -- a known, long-standing quirk (see
+# googleapis/google-api-php-client#2558 and similar reports), not a
+# sign the request itself is invalid. Checked by reason, not status
+# code, so it doesn't loosen retry behavior for genuinely bad 400s.
+RETRYABLE_REASON = "failedPrecondition"
+
 
 def list_all_message_ids(service):
     """Page through every message ID in the mailbox."""
@@ -86,7 +101,9 @@ def fetch_metadata_batch(service, message_ids, results):
     def callback(request_id, response, exception):
         if exception is not None:
             status = getattr(getattr(exception, "resp", None), "status", None)
-            if status in RETRYABLE_STATUSES:
+            content = getattr(exception, "content", b"") or b""
+            is_rate_limit_glitch = status == 400 and RETRYABLE_REASON.encode() in content
+            if status in RETRYABLE_STATUSES or is_rate_limit_glitch:
                 retry_ids.append(request_id)
             else:
                 print(f"  skipped {request_id} (status={status}, non-retryable): {exception}")

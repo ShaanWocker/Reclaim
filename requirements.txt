@@ -1,0 +1,9 @@
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+python-dotenv
+pandas
+streamlit>=1.32
+plotly
+openpyxl
+requests

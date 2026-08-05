@@ -1,0 +1,10 @@
+credentials.json
+token.json
+messages.csv
+drive_files.csv
+quota.json
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/

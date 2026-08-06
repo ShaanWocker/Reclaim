@@ -18,10 +18,12 @@ shared between users -- everyone who clones this creates their own):
    backward compatibility -- if present, and no .env is set, it's
    used instead.
 
-Upgrading from a Gmail-only setup? The Drive scope is new here, so
-your existing token.json won't cover it -- delete token.json and run
-any script once to re-consent. You'll grant Drive access alongside
-the Gmail access you already approved.
+Whenever the SCOPES list below changes (as it did when Drive support
+was added, and again when Empty Drive Trash required widening from
+drive.metadata to the full drive scope), your existing token.json
+won't cover the new scope -- delete it and run any script once to
+re-consent. You'll approve the fuller set of permissions in one go,
+not lose access to anything you'd already granted.
 """
 
 import os
@@ -34,16 +36,24 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 load_dotenv()  # no-op if there's no .env file -- doesn't raise
 
 # gmail.readonly powers the dashboard. gmail.modify is what lets the
-# "trash selected sender" button work. drive.metadata covers both
-# listing your Drive files AND trashing them -- it's a metadata-only
-# scope that strictly cannot read or download file content, so it's
-# the minimum needed rather than the broad "drive" scope. None of
-# these grant permanent, un-trashable deletion -- everything goes
-# through Trash first.
+# "trash selected sender" button work. drive covers listing, trashing,
+# and emptying Drive's Trash.
+#
+# This used to be the narrower drive.metadata scope (metadata-only,
+# never touches file content) until Empty Drive Trash was added --
+# Google's files.emptyTrash endpoint specifically requires the full
+# drive scope, with no narrower option, even though every other Drive
+# action this app performs works fine under drive.metadata. Widening
+# to drive for that one feature means the app can now technically
+# read/write file content too, even though nothing here does.
+#
+# None of these scopes grant permanent, un-trashable deletion by
+# default -- everything goes through Trash first, except the
+# deliberate Empty Drive Trash action itself.
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/gmail.modify",
-    "https://www.googleapis.com/auth/drive.metadata",
+    "https://www.googleapis.com/auth/drive",
 ]
 
 CREDENTIALS_FILE = "credentials.json"

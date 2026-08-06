@@ -1,10 +1,13 @@
 """
-Actions on Drive files: trashing, and reading your real account quota.
+Actions on Drive files: trashing, emptying Trash, and reading your
+real account quota.
 
 Trashing (not permanent delete) is intentional, same philosophy as
 the Gmail side -- reversible for 30 days rather than gone immediately.
-The drive.metadata scope covers both listing and trashing without
-ever granting access to file content.
+Listing and trashing individual files only ever need metadata access;
+emptying Trash is the exception -- Google requires the full drive
+scope for that specific endpoint, which is why auth.py requests it
+even though nothing here reads or writes file content.
 """
 
 from googleapiclient.discovery import build

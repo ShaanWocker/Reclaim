@@ -52,8 +52,12 @@ Google Takeout, which isn't something a live dashboard can integrate.
    - Fill in the required fields (app name, your email) -- nothing
      else matters since you're staying in testing mode
    - Add scopes: `.../auth/gmail.readonly`, `.../auth/gmail.modify`,
-     and `.../auth/drive.metadata` (metadata-only -- this app never
-     requests access to your file *content*, on Gmail or Drive)
+     and `.../auth/drive` -- full Drive access is wider than most of
+     the app needs (listing files and trashing them individually only
+     ever touch metadata), but Google's `emptyTrash` endpoint, used by
+     the Empty Drive Trash button, specifically requires this scope
+     with no narrower option. Nothing in this app reads or writes
+     your file content regardless of what the scope permits.
    - Under **Test users**, add your own Gmail address
    - Leave the app in **Testing** status -- this is what avoids
      Google's verification process entirely. Testing mode supports up
@@ -68,10 +72,13 @@ Google Takeout, which isn't something a live dashboard can integrate.
      `credentials.json` in this folder -- either method works, `.env`
      is just less fiddly to set up)
 
-**Upgrading from a Gmail-only setup?** The Drive scope is new, so your
-existing `token.json` won't cover it. Delete `token.json` and run any
-script once to re-consent -- you'll grant Drive access alongside the
-Gmail access you already approved.
+**Upgrading from an earlier setup?** Whenever the required scopes
+change -- Drive support being added, or Empty Drive Trash later
+requiring the fuller `drive` scope instead of `drive.metadata` --
+your existing `token.json` won't cover the new permissions. Delete
+`token.json` and run any script once to re-consent; you'll approve
+everything in one go rather than lose access to what you'd already
+granted.
 
 ## 2. Install and run
 

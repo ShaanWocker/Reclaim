@@ -43,6 +43,14 @@ Google Takeout, which isn't something a live dashboard can integrate.
 
 ## 1. Set up a Google Cloud project (~5 minutes)
 
+**Prefer a guided walkthrough?** Run `python setup_wizard.py` instead
+of following the steps below by hand -- it opens the right console
+page at each step, tells you exactly what to click, and writes your
+credentials straight to `.env` for you. Needs nothing beyond Python
+itself, so it's safe to run before installing anything else. The
+steps below are what it walks you through, if you'd rather do it
+manually or just want to know what it's doing.
+
 1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
    and create a new project (or reuse one).
 2. **APIs & Services > Library** -- search for and enable both the
@@ -71,14 +79,6 @@ Google Takeout, which isn't something a live dashboard can integrate.
    - (Alternative: click **Download JSON** instead and save it as
      `credentials.json` in this folder -- either method works, `.env`
      is just less fiddly to set up)
-
-**Upgrading from an earlier setup?** Whenever the required scopes
-change -- Drive support being added, or Empty Drive Trash later
-requiring the fuller `drive` scope instead of `drive.metadata` --
-your existing `token.json` won't cover the new permissions. Delete
-`token.json` and run any script once to re-consent; you'll approve
-everything in one go rather than lose access to what you'd already
-granted.
 
 ## 2. Install and run
 
@@ -217,6 +217,7 @@ look before sharing publicly.
 ## Project layout
 
 ```
+setup_wizard.py       guided OAuth setup -- run this first
 auth.py               shared OAuth flow for both Gmail and Drive
 gmail_fetch_data.py    scans Gmail, writes messages.csv
 gmail_actions.py       Gmail trash actions
